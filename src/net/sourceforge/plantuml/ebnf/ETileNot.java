@@ -35,31 +35,34 @@
  */
 package net.sourceforge.plantuml.ebnf;
 
-import net.sourceforge.plantuml.klimt.CopyForegroundColorToBackgroundColor;
-import net.sourceforge.plantuml.klimt.UStroke;
 import net.sourceforge.plantuml.klimt.UTranslate;
-import net.sourceforge.plantuml.klimt.color.HColor;
+import net.sourceforge.plantuml.klimt.color.HColorSet;
 import net.sourceforge.plantuml.klimt.drawing.UGraphic;
+import net.sourceforge.plantuml.klimt.font.FontConfiguration;
 import net.sourceforge.plantuml.klimt.font.StringBounder;
 import net.sourceforge.plantuml.klimt.geom.XDimension2D;
-import net.sourceforge.plantuml.klimt.shape.UEllipse;
+import net.sourceforge.plantuml.klimt.shape.UText;
+import net.sourceforge.plantuml.style.ISkinParam;
+import net.sourceforge.plantuml.style.Style;
 
-public class ETileWithCircles extends ETile {
+public class ETileNot extends ETile {
 
-	private static final double SIZE = 8;
-
-	private final double deltax = 30;
+	private static final int MARGIN_X1 = 3;
+	private static final int MARGIN_X2 = 8;
 	private final ETile orig;
-	private final HColor lineColor;
+	private final FontConfiguration fc;
+	private final Style style;
+	private final HColorSet colorSet;
+	private final ISkinParam skinParam;
+	private final UText utext;
 
-	public ETileWithCircles(ETile orig, HColor lineColor) {
+	public ETileNot(ETile orig, FontConfiguration fc, Style style, HColorSet colorSet, ISkinParam skinParam) {
+		this.skinParam = skinParam;
 		this.orig = orig;
-		this.lineColor = lineColor;
-	}
-
-	@Override
-	public double getWidth(StringBounder stringBounder) {
-		return orig.getWidth(stringBounder) + 2 * deltax;
+		this.style = style;
+		this.colorSet = colorSet;
+		this.fc = fc;
+		this.utext = UText.build("NOT", fc);
 	}
 
 	@Override
@@ -73,21 +76,21 @@ public class ETileWithCircles extends ETile {
 	}
 
 	@Override
+	public double getWidth(StringBounder stringBounder) {
+		final XDimension2D dimText = utext.calculateDimension(stringBounder);
+		return orig.getWidth(stringBounder) + dimText.getWidth() + MARGIN_X2;
+	}
+
+	@Override
 	public void drawU(UGraphic ug) {
-		final double linePos = getH1(ug.getStringBounder());
-		final XDimension2D fullDim = calculateDimension(ug.getStringBounder());
-		ug = ug.apply(lineColor).apply(UStroke.withThickness(1.5));
-		orig.drawU(ug.apply(UTranslate.dx(deltax)));
+		final StringBounder stringBounder = ug.getStringBounder();
+		// final XDimension2D dim = calculateDimension(stringBounder);
+		final XDimension2D dimText = utext.calculateDimension(stringBounder);
 
-		final UEllipse circle = UEllipse.build(SIZE, SIZE);
+		ug.apply(new UTranslate(MARGIN_X1, getH1(stringBounder) + utext.getDescent(stringBounder) + 1)).draw(utext);
 
-		ug.apply(UStroke.withThickness(2)).apply(new UTranslate(0, linePos - SIZE / 2)).draw(circle);
-		ug.apply(UStroke.withThickness(1)).apply(new CopyForegroundColorToBackgroundColor())
-				.apply(new UTranslate(fullDim.getWidth() - SIZE / 2, linePos - SIZE / 2)).draw(circle);
+		orig.drawU(ug.apply(UTranslate.dx(dimText.getWidth() + MARGIN_X2)));
 
-		ug = ug.apply(UStroke.withThickness(1.5));
-		drawHlineDirected(ug, linePos, SIZE, deltax, 0.5, 25);
-		drawHlineDirected(ug, linePos, fullDim.getWidth() - deltax, fullDim.getWidth() - SIZE / 2, 0.5, 25);
 	}
 
 	@Override

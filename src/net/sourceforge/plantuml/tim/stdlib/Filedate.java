@@ -2,15 +2,15 @@
  * PlantUML : a free UML diagram generator
  * ========================================================================
  *
- * (C) Copyright 2009-2020, Arnaud Roques
+ * (C) Copyright 2009-2024, Arnaud Roques
  *
  * Project Info:  https://plantuml.com
- * 
+ *
  * If you like this project or if you find it useful, you can support us at:
- * 
+ *
  * https://plantuml.com/patreon (only 1$ per month!)
  * https://plantuml.com/paypal
- * 
+ *
  * This file is part of PlantUML.
  *
  * PlantUML is free software; you can redistribute it and/or modify it
@@ -31,56 +31,44 @@
  *
  * Original Author:  Arnaud Roques
  *
- *
  */
-package net.sourceforge.plantuml.ebnf;
+package net.sourceforge.plantuml.tim.stdlib;
 
-public enum Symbol {
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-	LITTERAL, //
+import net.sourceforge.plantuml.preproc.Defines;
+import net.sourceforge.plantuml.text.StringLocated;
+import net.sourceforge.plantuml.tim.EaterException;
+import net.sourceforge.plantuml.tim.TContext;
+import net.sourceforge.plantuml.tim.TFunctionSignature;
+import net.sourceforge.plantuml.tim.TMemory;
+import net.sourceforge.plantuml.tim.expression.TValue;
 
-	// https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
-	DEFINITION, // =
-	CONCATENATION, // ,
-	TERMINATION, // ;
-	ALTERNATION, // |
-	OPTIONAL_OPEN, // [
-	OPTIONAL_CLOSE, // ]
-	OPTIONAL, //
-	REPETITION_SYMBOL, // *
-	REPETITION_OPEN, // {
-	REPETITION_CLOSE, // }
-	REPETITION_MINUS_CLOSE, // }
-	REPETITION_ZERO_OR_MORE, //
-	REPETITION_ONE_OR_MORE, //
-	GROUPING_OPEN, // (
-	GROUPING_CLOSE, // )
-	TERMINAL_STRING1, // " "
-	TERMINAL_STRING2, // ' '
-	COMMENT_TOKEN, // (* *)
-	COMMENT_BELOW, // (* *)
-	COMMENT_ABOVE, // (* *)
-	SPECIAL_SEQUENCE, // ? ?
-	NOT; // EXCEPTION -
+public class Filedate extends SimpleReturnFunction {
 
-	public int getPriority() {
-		switch (this) {
-		case REPETITION_SYMBOL:
-			return 3;
-		case CONCATENATION:
-			return 2;
-		case ALTERNATION:
-			return 1;
+	private final String value;
+
+	public Filedate(Defines defines) {
+		this.value = defines.getEnvironmentValue("filedate");
+	}
+
+	public TFunctionSignature getSignature() {
+		return new TFunctionSignature("%filedate", 0);
+	}
+
+	@Override
+	public boolean canCover(int nbArg, Set<String> namedArgument) {
+		return nbArg == 0;
+	}
+
+	@Override
+	public TValue executeReturnFunction(TContext context, TMemory memory, StringLocated location, List<TValue> values,
+			Map<String, TValue> named) throws EaterException {
+		if (value == null) {
+			return TValue.fromString("");
 		}
-		throw new UnsupportedOperationException();
+		return TValue.fromString(value);
 	}
-
-	boolean isOperator() {
-		return this == CONCATENATION || this == ALTERNATION || this == REPETITION_SYMBOL;
-	}
-
-	boolean isFunction() {
-		return this == OPTIONAL || this == REPETITION_ZERO_OR_MORE;
-	}
-
 }

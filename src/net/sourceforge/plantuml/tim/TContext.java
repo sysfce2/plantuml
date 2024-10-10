@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import net.sourceforge.plantuml.DefinitionsContainer;
@@ -95,8 +96,10 @@ import net.sourceforge.plantuml.tim.stdlib.Dec2hex;
 import net.sourceforge.plantuml.tim.stdlib.Dirpath;
 import net.sourceforge.plantuml.tim.stdlib.Eval;
 import net.sourceforge.plantuml.tim.stdlib.Feature;
+import net.sourceforge.plantuml.tim.stdlib.Filedate;
 import net.sourceforge.plantuml.tim.stdlib.FileExists;
 import net.sourceforge.plantuml.tim.stdlib.Filename;
+import net.sourceforge.plantuml.tim.stdlib.FilenameNoExtension;
 import net.sourceforge.plantuml.tim.stdlib.FunctionExists;
 import net.sourceforge.plantuml.tim.stdlib.GetAllStdlib;
 import net.sourceforge.plantuml.tim.stdlib.GetAllTheme;
@@ -145,6 +148,7 @@ import net.sourceforge.plantuml.tim.stdlib.Strpos;
 import net.sourceforge.plantuml.tim.stdlib.Substr;
 import net.sourceforge.plantuml.tim.stdlib.Upper;
 import net.sourceforge.plantuml.tim.stdlib.VariableExists;
+import net.sourceforge.plantuml.tim.stdlib.Xargs;
 import net.sourceforge.plantuml.utils.LineLocation;
 
 public class TContext {
@@ -179,8 +183,10 @@ public class TContext {
 		functionsSet.addFunction(new Dirpath(defines));
 		functionsSet.addFunction(new Eval());
 		functionsSet.addFunction(new Feature());
+		functionsSet.addFunction(new Filedate(defines));
 		functionsSet.addFunction(new FileExists());
 		functionsSet.addFunction(new Filename(defines));
+		functionsSet.addFunction(new FilenameNoExtension(defines));
 		functionsSet.addFunction(new FunctionExists());
 		functionsSet.addFunction(new GetAllStdlib());
 		functionsSet.addFunction(new GetAllTheme());
@@ -230,6 +236,7 @@ public class TContext {
 		functionsSet.addFunction(new Substr());
 		functionsSet.addFunction(new Upper());
 		functionsSet.addFunction(new VariableExists());
+		functionsSet.addFunction(new Xargs());
 		// %standard_exists_function
 		// %str_replace
 		// !exit
@@ -802,5 +809,21 @@ public class TContext {
 	public TFunction getFunctionSmart(TFunctionSignature signature) {
 		return functionsSet.getFunctionSmart(signature);
 	}
+	
+	/**
+	 * Retrieve data given after @startuml.
+	 */
+	public Optional<String> getXargs() {
+		if (resultList.size() == 0)
+			return Optional.empty();
+
+		final String first = resultList.get(0).toString();
+		final int idx = first.indexOf(' ');
+		if (idx == -1)
+			return Optional.empty();
+
+		return Optional.of(first.substring(idx + 1).trim());
+	}
+
 
 }

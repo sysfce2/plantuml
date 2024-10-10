@@ -1,32 +1,13 @@
-name: Native Image - Snapshot
+name: Native Image - Release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+  release:
+    types: [released]
 
 jobs:
-  clean_release:
-    name: 'Clean the snapshot-native pre-release'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
- 
-      - name: Clean release and tag
-        run: |
-          gh release delete snapshot-native --cleanup-tag -y || true
-          echo "::notice title=release snapshot-native::snapshot - Native Image at ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/snapshot-native"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build_images:
     name: 'Build Native Image ${{ matrix.platform }}'
-    needs: clean_release
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
@@ -52,8 +33,8 @@ jobs:
           cache: gradle
 
       - name: Set the release version
-        run: echo "VERSION=$(grep 'version =' gradle.properties | cut -d' ' -f 3)" >> $GITHUB_ENV
         shell: bash
+        run: echo "VERSION=$(grep 'version =' gradle.properties | cut -d' ' -f 3)" >> $GITHUB_ENV
 
       - name: Set the DateTime
         shell: bash
@@ -81,15 +62,17 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "plantuml-gplv2/build/native/native*/plantuml-*-${{ matrix. platform }}-${{ env.VERSION }}.zip"
+          file: "plantuml-gplv2/build/native/native*/plantuml-*-${{ matrix.platform }}-${{ env.VERSION }}.zip"
           file_glob: true
-          tag: snapshot-native
-          release_name: snapshot - Native Image (~v${{ env.VERSION }})
+          tag: v${{ env.VERSION }}-native
+          release_name: Release - Native Image (v${{ env.VERSION }})
           overwrite: true
           make_latest: false
-          prerelease: true
+          prerelease: false
           body: |
-              ## Version ~v${{ env.VERSION }} of the ${{ env.DATETIME }}
-              This is a [Native Image](https://www.graalvm.org/latest/reference-manual/native-image/) pre-release of [the latest development work](https://github.com/plantuml/plantuml/commits/).
-              ⚠️  **It is not ready for general use** ⚠️
-              ⏱  _Snapshot taken the ${{ env.DATETIME }}_
+              ## Version v${{ env.VERSION }} of the ${{ env.DATETIME }}
+              This is a [Native Image](https://www.graalvm.org/latest/reference-manual/native-image/) release of [the latest development work](https://github.com/plantuml/plantuml/commits/).
+              ## Credit or GitHub Action used
+              - [`graalvm/setup-graalvm`](https://github.com/graalvm/setup-graalvm)
+              - [`thedoctor0/zip-release`](https://github.com/TheDoctor0/zip-release)
+              - [`svenstaro/upload-release-action`](https://github.com/svenstaro/upload-release-action)

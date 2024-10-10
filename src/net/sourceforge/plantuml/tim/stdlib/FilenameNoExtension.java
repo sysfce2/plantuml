@@ -5,12 +5,12 @@
  * (C) Copyright 2009-2024, Arnaud Roques
  *
  * Project Info:  https://plantuml.com
- * 
+ *
  * If you like this project or if you find it useful, you can support us at:
- * 
+ *
  * https://plantuml.com/patreon (only 1$ per month!)
  * https://plantuml.com/paypal
- * 
+ *
  * This file is part of PlantUML.
  *
  * PlantUML is free software; you can redistribute it and/or modify it
@@ -30,41 +30,46 @@
  *
  *
  * Original Author:  Arnaud Roques
- * 
+ * Contribution: The-Lum
  *
  */
-package net.sourceforge.plantuml.ebnf;
+package net.sourceforge.plantuml.tim.stdlib;
 
-import net.sourceforge.plantuml.command.CommandExecutionResult;
-import net.sourceforge.plantuml.command.CommandMultilines2;
-import net.sourceforge.plantuml.command.MultilinesStrategy;
-import net.sourceforge.plantuml.command.Trim;
-import net.sourceforge.plantuml.klimt.color.NoSuchColorException;
-import net.sourceforge.plantuml.regex.IRegex;
-import net.sourceforge.plantuml.regex.RegexConcat;
-import net.sourceforge.plantuml.regex.RegexLeaf;
-import net.sourceforge.plantuml.utils.BlocLines;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class CommandEbnfMultilines extends CommandMultilines2<PSystemEbnf> {
+import net.sourceforge.plantuml.preproc.Defines;
+import net.sourceforge.plantuml.text.StringLocated;
+import net.sourceforge.plantuml.tim.EaterException;
+import net.sourceforge.plantuml.tim.TContext;
+import net.sourceforge.plantuml.tim.TFunctionSignature;
+import net.sourceforge.plantuml.tim.TMemory;
+import net.sourceforge.plantuml.tim.expression.TValue;
 
-	public CommandEbnfMultilines() {
-		super(getRegexConcat(), MultilinesStrategy.KEEP_STARTING_QUOTE, Trim.BOTH);
+public class FilenameNoExtension extends SimpleReturnFunction {
+
+	private final String value;
+
+	public FilenameNoExtension(Defines defines) {
+		this.value = defines.getEnvironmentValue("filenameNoExtension");
 	}
 
-	static IRegex getRegexConcat() {
-		return RegexConcat.build(CommandEbnfMultilines.class.getName(), RegexLeaf.start(), //
-				new RegexLeaf("LINE", "([%pLN_][-%pLN_]*[%s]*=.*)"), //
-				RegexLeaf.end());
-	}
-
-	@Override
-	public String getPatternEnd() {
-		return "^(.*);$";
+	public TFunctionSignature getSignature() {
+		return new TFunctionSignature("%filename_no_extension", 0);
 	}
 
 	@Override
-	protected CommandExecutionResult executeNow(PSystemEbnf diagram, BlocLines lines) throws NoSuchColorException {
-		return diagram.addBlocLines(lines, null, null);
+	public boolean canCover(int nbArg, Set<String> namedArgument) {
+		return nbArg == 0;
 	}
 
+	@Override
+	public TValue executeReturnFunction(TContext context, TMemory memory, StringLocated location, List<TValue> values,
+			Map<String, TValue> named) throws EaterException {
+		if (value == null) {
+			return TValue.fromString("");
+		}
+		return TValue.fromString(value);
+	}
 }
