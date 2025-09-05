@@ -21,6 +21,11 @@ plugins {
 //	alias(libs.plugins.adarshr.test.logger)
 }
 
+jacoco {
+    // Gradle 9 / Java 17
+    toolVersion = "0.8.12"
+}
+
 group = "net.sourceforge.plantuml"
 description = "PlantUML"
 
