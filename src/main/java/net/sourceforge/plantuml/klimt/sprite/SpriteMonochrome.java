@@ -207,7 +207,8 @@ public class SpriteMonochrome implements Sprite {
 		return new UImage(new PixelImage(im, AffineTransformType.TYPE_BILINEAR));
 	}
 
-	public TextBlock asTextBlock(final HColor fontColor, final HColor forcedColor, final double scale) {
+	@Override
+	public TextBlock asTextBlock(final HColor fontColor, final HColor forcedColor, final double scale, final HColor backColor) {
 		return new AbstractTextBlock() {
 
 			public void drawU(UGraphic ug) {
